@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COLOR CLASH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --card: #13131a;
+            --border: #1e1e2e;
+            --text: #e0e0ff;
+            --muted: #555577;
+            --red: #ff4466;
+            --blue: #4488ff;
+            --green: #44ffaa;
+            --yellow: #ffcc44;
+            --purple: #cc66ff;
+            --orange: #ff8844;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Tajawal', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Background glow effects */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(68, 136, 255, 0.06) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(204, 102, 255, 0.06) 0%, transparent 70%);
+            bottom: -100px;
+            right: -100px;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-top: 2px;
+            color: var(--text);
+            transition: transform 0.15s;
+        }
+
+        .stat-value.pop {
+            transform: scale(1.3);
+            color: var(--green);
+        }
+
+        /* Timer bar */
+        .timer-wrap {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--green), var(--blue));
+            transition: width 0.1s linear, background 0.5s;
+        }
+
+        .timer-bar.danger {
+            background: linear-gradient(90deg, var(--red), var(--orange));
+        }
+
+        /* Main game card */
+        .game-card {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+
+        .instruction {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .word-display {
+            font-size: 3.2rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1;
+            transition: transform 0.2s, opacity 0.2s;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .word-display.shake {
+            animation: shake 0.3s ease;
+        }
+
+        .word-display.bounce {
+            animation: bounce 0.3s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-8px);
+            }
+
+            75% {
+                transform: translateX(8px);
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        /* Buttons grid */
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .color-btn {
+            padding: 18px;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+            position: relative;
+            overflow: hidden;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .color-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.12;
+            border-radius: 14px;
+        }
+
+        .color-btn:active {
+            transform: scale(0.94);
+        }
+
+        .color-btn:hover {
+            transform: scale(1.03);
+        }
+
+        .color-btn[data-color="Red"] {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .color-btn[data-color="Blue"] {
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        .color-btn[data-color="Green"] {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .color-btn[data-color="Yellow"] {
+            border-color: var(--yellow);
+            color: var(--yellow);
+        }
+
+        .color-btn[data-color="Purple"] {
+            border-color: var(--purple);
+            color: var(--purple);
+        }
+
+        .color-btn[data-color="Orange"] {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .color-btn.correct-flash {
+            animation: correctFlash 0.3s ease;
+        }
+
+        .color-btn.wrong-flash {
+            animation: wrongFlash 0.3s ease;
+        }
+
+        @keyframes correctFlash {
+            0% {
+                background: rgba(68, 255, 170, 0.3);
+            }
+
+            100% {
+                background: var(--card);
+            }
+        }
+
+        @keyframes wrongFlash {
+            0% {
+                background: rgba(255, 68, 102, 0.3);
+            }
+
+            100% {
+                background: var(--card);
+            }
+        }
+
+        /* Feedback overlay */
+        .feedback {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            border-radius: 24px;
+        }
+
+        .feedback.show {
+            opacity: 1;
+            animation: feedbackAnim 0.5s ease forwards;
+        }
+
+        @keyframes feedbackAnim {
+            0% {
+                opacity: 1;
+                transform: scale(0.5);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+        }
+
+        /* Screen: start/end */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .screen h2 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--text);
+        }
+
+        .screen p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            max-width: 300px;
+        }
+
+        .big-score {
+            font-size: 5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 40px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 20px rgba(68, 136, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 28px rgba(68, 136, 255, 0.45);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .high-score-display {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .high-score-display span {
+            color: var(--yellow);
+            font-weight: 700;
+        }
+
+        /* Combo indicator */
+        .combo {
+            font-size: 0.75rem;
+            color: var(--purple);
+            font-weight: 700;
+            letter-spacing: 1px;
+            min-height: 20px;
+            transition: opacity 0.3s;
+        }
+
+        /* Game area toggle */
+        #gameArea {
+            display: none;
+            width: 100%;
+        }
+
+        #gameArea.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* New Footer Styling */
+        .game-footer {
+            width: 100%;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--muted);
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            margin-top: 10px;
+        }
+
+        .game-footer a {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .game-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Start screen -->
+        <div class="screen active" id="startScreen">
+            <div class="header">
+                <div class="title">🎨 COLOR CLASH</div>
+            </div>
+            <p>Tap the <strong>meaning</strong> of the text word,<br>not the color of the ink! 🧠<br><br>You have
+                <strong>30 seconds</strong> — Be fast!</p>
+            <button class="btn-primary" onclick="startGame()">Start Game</button>
+            <div class="high-score-display">High Score: <span id="hsDisplay">0</span></div>
+
+            <!-- Footer in Start Screen -->
+            <footer class="game-footer">
+                © 2026 Developed by <a href="https://itch.io/profile/YasMin-x8u" target="_blank">YasMin-x8u</a>. All
+                Rights Reserved.
+            </footer>
+        </div>
+
+        <!-- Game area -->
+        <div id="gameArea">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="scoreDisplay">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Time</div>
+                    <div class="stat-value" id="timeDisplay">30</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Correct</div>
+                    <div class="stat-value" id="correctDisplay">0</div>
+                </div>
+            </div>
+
+            <div class="timer-wrap">
+                <div class="timer-bar" id="timerBar"></div>
+            </div>
+
+            <div class="game-card">
+                <div class="instruction">Choose the color of the written word ✍️</div>
+                <div class="word-display" id="wordDisplay">—</div>
+                <div class="feedback" id="feedback"></div>
+            </div>
+
+            <div class="combo" id="comboDisplay"></div>
+
+            <div class="buttons" id="buttonsGrid"></div>
+        </div>
+
+        <!-- End screen -->
+        <div class="screen" id="endScreen">
+            <div class="header">
+                <div class="title">Game Over!</div>
+            </div>
+            <div class="big-score" id="finalScore">0</div>
+            <div id="endMessage" style="color: var(--muted); font-size:0.9rem;"></div>
+            <button class="btn-primary" onclick="startGame()">🔄 Play Again</button>
+            <div class="high-score-display">High Score: <span id="hsDisplay2">0</span></div>
+
+            <!-- Footer in End Screen -->
+            <footer class="game-footer">
+                © 2026 Developed by <a href="https://itch.io/profile/YasMin-x8u" target="_blank">YasMin-x8u</a>.
+            </footer>
+        </div>
+
+    </div>
+
+    <script>
+        const COLORS = [
+            { name: 'Red', css: '#ff4466' },
+            { name: 'Blue', css: '#4488ff' },
+            { name: 'Green', css: '#44ffaa' },
+            { name: 'Yellow', css: '#ffcc44' },
+            { name: 'Purple', css: '#cc66ff' },
+            { name: 'Orange', css: '#ff8844' },
+        ];
+
+        const TOTAL_TIME = 30;
+        let score = 0, correct = 0, timeLeft = TOTAL_TIME;
+        let currentWord = '', currentColor = '';
+        let timer = null, combo = 0;
+        let highScore = 0;
+
+        function shuffle(arr) {
+            return [...arr].sort(() => Math.random() - 0.5);
+        }
+
+        function startGame() {
+            score = 0; correct = 0; timeLeft = TOTAL_TIME; combo = 0;
+            updateStats();
+            document.getElementById('comboDisplay').textContent = '';
+
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('endScreen').classList.remove('active');
+            document.getElementById('gameArea').classList.add('active');
+
+            buildButtons();
+            nextWord();
+            startTimer();
+        }
+
+        function buildButtons() {
+            const grid = document.getElementById('buttonsGrid');
+            grid.innerHTML = '';
+            COLORS.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'color-btn';
+                btn.dataset.color = c.name;
+                btn.textContent = c.name;
+                btn.onclick = () => handleAnswer(c.name, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function nextWord() {
+            const shuffled = shuffle(COLORS);
+            const wordColor = shuffled[0];
+            let inkColor = shuffled[1];
+            while (inkColor.name === wordColor.name) inkColor = shuffled[Math.floor(Math.random() * COLORS.length)];
+
+            currentWord = wordColor.name;
+            currentColor = inkColor.name;
+
+            const el = document.getElementById('wordDisplay');
+            el.textContent = currentWord;
+            el.style.color = inkColor.css;
+            el.classList.remove('shake', 'bounce');
+        }
+
+        function handleAnswer(chosen, btn) {
+            const correct_answer = currentWord;
+            if (chosen === correct_answer) {
+                combo++;
+                correct++;
+                const pts = combo >= 3 ? 20 : 10;
+                score += pts;
+                btn.classList.add('correct-flash');
+                setTimeout(() => btn.classList.remove('correct-flash'), 400);
+                showFeedback('✅');
+                document.getElementById('wordDisplay').classList.add('bounce');
+
+                if (combo >= 3) {
+                    document.getElementById('comboDisplay').textContent = `🔥 Combo ×${combo}! +${pts}`;
+                } else {
+                    document.getElementById('comboDisplay').textContent = '';
+                }
+            } else {
+                combo = 0;
+                score = Math.max(0, score - 5);
+                btn.classList.add('wrong-flash');
+                setTimeout(() => btn.classList.remove('wrong-flash'), 400);
+                showFeedback('❌');
+                document.getElementById('wordDisplay').classList.add('shake');
+                document.getElementById('comboDisplay').textContent = '';
+            }
+            updateStats();
+            setTimeout(nextWord, 150);
+        }
+
+        function showFeedback(emoji) {
+            const f = document.getElementById('feedback');
+            f.textContent = emoji;
+            f.classList.remove('show');
+            void f.offsetWidth;
+            f.classList.add('show');
+            setTimeout(() => f.classList.remove('show'), 500);
+        }
+
+        function updateStats() {
+            const sv = document.getElementById('scoreDisplay');
+            sv.textContent = score;
+            sv.classList.add('pop');
+            setTimeout(() => sv.classList.remove('pop'), 200);
+            document.getElementById('correctDisplay').textContent = correct;
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            const bar = document.getElementById('timerBar');
+
+            timer = setInterval(() => {
+                timeLeft -= 0.1;
+                const pct = (timeLeft / TOTAL_TIME) * 100;
+                bar.style.width = pct + '%';
+
+                if (timeLeft <= 8) bar.classList.add('danger');
+                else bar.classList.remove('danger');
+
+                document.getElementById('timeDisplay').textContent = Math.ceil(timeLeft);
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endGame();
+                }
+            }, 100);
+        }
+
+        function endGame() {
+            document.getElementById('gameArea').classList.remove('active');
+            document.getElementById('endScreen').classList.add('active');
+
+            if (score > highScore) highScore = score;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('hsDisplay').textContent = highScore;
+            document.getElementById('hsDisplay2').textContent = highScore;
+
+            let msg = '';
+            if (score >= 200) msg = '🏆 Legendary! Your brain is made of gold!';
+            else if (score >= 120) msg = '🔥 Outstanding! Amazing speed!';
+            else if (score >= 60) msg = '👍 Good job! Focus a bit more next time.';
+            else msg = '💪 Not bad! It’s a tough game, keep practicing!';
+            document.getElementById('endMessage').textContent = msg;
+        }
+    </script>
+</body>
+
+</html>
